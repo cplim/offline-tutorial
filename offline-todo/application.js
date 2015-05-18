@@ -6,6 +6,7 @@
     input = document.querySelector('input');
     ul = document.querySelector('ul');
     document.body.addEventListener('submit', onSubmit);
+    document.body.addEventListener('click', onClick);
   })
   .then(refreshView);
 
@@ -21,6 +22,15 @@
     .then(refreshView);
   }
 
+  function onClick(e) {
+    e.preventDefault();
+    if(e.target.hasAttribute('id')) {
+      databaseTodosGetById(e.target.getAttribute('id'))
+      .then(databaseTodosDelete)
+      .then(refreshView);
+    }
+  }
+
   function refreshView() {
     return databaseTodosGet().then(renderAllTodos);
   }
@@ -34,14 +44,42 @@
   }
 
   function todoToHtml(todo) {
-    return '<li>'+todo.text+'</li>';
+    return '<li><button id="'+todo._id+'">delete</button>'+todo.text+'</li>';
+  }
+
+  function databaseTodosGetById(id) {
+    return new Promise(function(resolve, reject) {
+      var transaction = db.transaction(['todo'], 'readonly');
+      var store = transaction.objectStore('todo');
+      
+      var request = store.get(id);
+      request.onsuccess = function(e) {
+        var result = e.target.result;
+        resolve(result);
+      };
+      request.onerror = reject;
+    });
+  }
+
+  function databaseTodosDelete(todo) {
+    return new Promise(function(resolve, reject) {
+      var transaction = db.transaction(['todo'], 'readwrite');
+      var store = transaction.objectStore('todo');
+
+      var request = store.delete(todo._id);
+
+      transaction.oncomplete = resolve;
+      request.onerror = reject;
+    });
   }
 
   function databaseTodosPut(todo) {
     return new Promise(function(resolve, reject) {
       var transaction = db.transaction(['todo'], 'readwrite');
       var store = transaction.objectStore('todo');
+
       var request = store.put(todo);
+
       transaction.oncomplete = resolve;
       request.onerror = reject;
     });
