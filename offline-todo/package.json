@@ -1,5 +1,8 @@
 {
   "devDependencies": {
     "node-static": "^0.7.6"
+  },
+  "dependencies": {
+    "indexeddbshim": "^2.0.2"
   }
 }
