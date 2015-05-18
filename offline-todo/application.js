@@ -5,6 +5,10 @@
   databaseOpen().then(function() {
     input = document.querySelector('input');
     document.body.addEventListener('submit', onSubmit);
+  })
+  .then(databaseTodosGet)
+  .then(function(todos) {
+    console.log(todos);
   });
 
   function onSubmit(e) {
@@ -25,6 +29,28 @@
       var request = store.put(todo);
       transaction.oncomplete = resolve;
       request.onerror = reject;
+    });
+  }
+
+  function databaseTodosGet() {
+    return new Promise(function(resolve, reject) {
+      var transaction = db.transaction(['todo'], 'readonly');
+      var store = transaction.objectStore('todo');
+
+      var keyRange = IDBKeyRange.lowerBound(0);
+      var cursorRequest = store.openCursor(keyRange);
+
+      var data = [];
+      cursorRequest.onsuccess = function(e) {
+        var result = e.target.result;
+
+        if(result) {
+          data.push(result.value);
+          result.continue();
+        } else {
+          resolve(data);
+        }
+      };
     });
   }
 
