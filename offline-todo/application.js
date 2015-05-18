@@ -8,7 +8,7 @@
 
   function databaseOpen() {
     return new Promise(function(resolve, reject) {
-      var version = 3;
+      var version = 4;
       var request = indexedDB.open('todos', version);
 
       // run migrations (if necessary)
@@ -42,6 +42,17 @@
             }
             break;
 
+          case 4:
+            if(db.objectStoreNames.contains('todoList')) {
+              console.log('deleting todoList');
+              db.deleteObjectStore('todoList');
+            }
+
+            if(db.objectStoreNames.contains('todoItem')) {
+              console.log('deleting todoItem');
+              db.deleteObjectStore('todoItem');
+            }
+            // no break to create 'todo' objectStore
           default:
             console.log('creating todo');
             db.createObjectStore('todo', { keyPath: '_id' });
