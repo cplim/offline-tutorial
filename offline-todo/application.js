@@ -8,7 +8,7 @@
 
   function databaseOpen() {
     return new Promise(function(resolve, reject) {
-      var version = 2;
+      var version = 3;
       var request = indexedDB.open('todos', version);
 
       // run migrations (if necessary)
@@ -17,10 +17,26 @@
         e.target.transaction.onerror = reject;
 
         switch(e.newVersion) {
+          case 3:
+            console.log('creating todoItem');
+            db.createObjectStore('todoItem', { keyPath: '_id' });
+
+            if(db.objectStoreNames.contains('todoList')) {
+              console.log('deleting todoList');
+              db.deleteObjectStore('todoList');
+            }
+
+            if(db.objectStoreNames.contains('todo')) {
+              console.log('deleting todo');
+              db.deleteObjectStore('todo');
+            }
+            break;
+
           case 2:
             console.log('creating todoList');
             db.createObjectStore('todoList', { keyPath: '_id' });
-            if(e.oldVersion === 1) { // remove old objectstore
+
+            if(db.objectStoreNames.contains('todo')) {
               console.log('deleting todo');
               db.deleteObjectStore('todo');
             }
