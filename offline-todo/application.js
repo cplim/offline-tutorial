@@ -1,15 +1,13 @@
 (function() {
   'use strict';
-  var db, input;
+  var db, input, ul;
 
   databaseOpen().then(function() {
     input = document.querySelector('input');
+    ul = document.querySelector('ul');
     document.body.addEventListener('submit', onSubmit);
   })
-  .then(databaseTodosGet)
-  .then(function(todos) {
-    console.log(todos);
-  });
+  .then(refreshView);
 
   function onSubmit(e) {
     e.preventDefault();
@@ -19,7 +17,24 @@
     };
     databaseTodosPut(todo).then(function() {
       input.value = '';
+    })
+    .then(refreshView);
+  }
+
+  function refreshView() {
+    return databaseTodosGet().then(renderAllTodos);
+  }
+
+  function renderAllTodos(todos) {
+    var html = '';
+    todos.forEach(function(todo) {
+      html += todoToHtml(todo);
     });
+    ul.innerHTML = html;
+  }
+
+  function todoToHtml(todo) {
+    return '<li>'+todo.text+'</li>';
   }
 
   function databaseTodosPut(todo) {
